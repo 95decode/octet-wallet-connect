@@ -7,16 +7,24 @@ interface IInitArgs {
   mnemonic?: string
 }
 
+interface Octet {
+  status: boolean
+  address: string
+}
+
 /**
  * Library
  */
 export default class EIP155Lib {
   wallet: Wallet
-  octet: boolean
+  octet: Octet
 
   constructor(wallet: Wallet) {
     this.wallet = wallet
-    this.octet = false
+    this.octet = {
+      status: false,
+      address: ""
+    }
   }
 
   static init({ mnemonic }: IInitArgs) {
@@ -26,14 +34,14 @@ export default class EIP155Lib {
   }
 
   getMnemonic() {
-    const res = this.octet 
+    const res = this.octet.status
     ? "Octet does not export mnemoic phrase." 
     : this.wallet.mnemonic.phrase
     return res
   }
 
   getAddress() {
-    return this.wallet.address
+    return this.octet.status ? this.octet.address : this.wallet.address
   }
 
   signMessage(message: string) {

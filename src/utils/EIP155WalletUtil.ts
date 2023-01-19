@@ -32,10 +32,13 @@ export async function createOrRestoreEIP155Wallet() {
 
   address1 = wallet1.getAddress()
   address2 = wallet2.getAddress()
+  address3 = await octetGetAddress()
 
   wallet3 = EIP155Lib.init({})
-  wallet3.octet = true
-  address3 = await octetGetAddress()
+  wallet3.octet = {
+    status: true,
+    address: address3
+  }
 
   eip155Wallets = {
     [address1]: wallet1,

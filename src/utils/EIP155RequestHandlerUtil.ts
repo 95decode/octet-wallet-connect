@@ -24,7 +24,7 @@ export async function approveEIP155Request(
   switch (request.method) {
     case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
     case EIP155_SIGNING_METHODS.ETH_SIGN:
-      if(!wallet.octet) {
+      if(!wallet.octet.status) {
         const message = getSignParamsMessage(request.params)
         const signedMessage = await wallet.signMessage(message)
         return formatJsonRpcResult(id, signedMessage)
@@ -36,7 +36,7 @@ export async function approveEIP155Request(
     case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA:
     case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3:
     case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4:
-      if(!wallet.octet) {
+      if(!wallet.octet.status) {
         const { domain, types, message: data } = getSignTypedDataParamsData(request.params)
         delete types.EIP712Domain
         const signedData = await wallet._signTypedData(domain, types, data)
@@ -50,8 +50,7 @@ export async function approveEIP155Request(
           message: data
         }
         
-        const uuid = await octetSignTypedData(typedData, "0x24b72De0699fa68fc9cB4783A44297D96B93B0D9")
-        console.log("uuid", uuid)
+        const uuid = await octetSignTypedData(typedData, wallet.getAddress())
         await wait(1000)
         let signedData = await octetSignTypedDataQuery(uuid)
 
@@ -64,7 +63,7 @@ export async function approveEIP155Request(
       }
 
     case EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION:
-      if(!wallet.octet) {
+      if(!wallet.octet.status) {
         const provider = new providers.JsonRpcProvider(EIP155_CHAINS[chainId as TEIP155Chain].rpc)
         const sendTransaction = request.params[0]
         const connectedWallet = wallet.connect(provider)
@@ -76,7 +75,7 @@ export async function approveEIP155Request(
       }
 
     case EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION:
-      if(!wallet.octet) {
+      if(!wallet.octet.status) {
         const signTransaction = request.params[0]
         const signature = await wallet.signTransaction(signTransaction)
         return formatJsonRpcResult(id, signature)
