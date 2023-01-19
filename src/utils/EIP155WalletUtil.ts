@@ -1,5 +1,5 @@
 import EIP155Lib from '@/lib/EIP155Lib'
-import axios from 'axios'
+import { getOctetAddress } from '@/utils/OctetUtil'
 
 export let wallet1: EIP155Lib
 export let wallet2: EIP155Lib
@@ -30,33 +30,12 @@ export async function createOrRestoreEIP155Wallet() {
     localStorage.setItem('EIP155_MNEMONIC_2', wallet2.getMnemonic())
   }
 
-  wallet3 = EIP155Lib.init({})
-  wallet3.octet = true
-
   address1 = wallet1.getAddress()
   address2 = wallet2.getAddress()
 
-  // For test
-  const octetId = process.env.NEXT_PUBLIC_OCTET_WALLET_ID
-  const octetKey = process.env.NEXT_PUBLIC_OCTET_API_KEY
-
-  const options = {
-    method: 'GET',
-    url: `https://octet-api.blockchainapi.io/2.0/wallets/${octetId}/child-addresses?pos=0&offset=1&order=desc`,
-    headers: {
-      accept: 'application/json',
-      Authorization: `Bearer ${octetKey}`
-    }
-  };
-
-  await axios
-  .request(options)
-  .then(function (response) {
-    address3 = response.data[0].address
-  })
-  .catch(function (error) {
-    console.error(error)
-  });
+  wallet3 = EIP155Lib.init({})
+  wallet3.octet = true
+  address3 = await getOctetAddress()
 
   eip155Wallets = {
     [address1]: wallet1,
