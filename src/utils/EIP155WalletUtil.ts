@@ -1,5 +1,5 @@
 import EIP155Lib from '@/lib/EIP155Lib'
-import { getOctetAddress } from '@/utils/OctetUtil'
+import { octetGetAddress } from '@/utils/OctetUtil'
 
 export let wallet1: EIP155Lib
 export let wallet2: EIP155Lib
@@ -35,7 +35,7 @@ export async function createOrRestoreEIP155Wallet() {
 
   wallet3 = EIP155Lib.init({})
   wallet3.octet = true
-  address3 = await getOctetAddress()
+  address3 = await octetGetAddress()
 
   eip155Wallets = {
     [address1]: wallet1,

@@ -8,7 +8,11 @@ import {
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
-import { ethers, providers } from 'ethers'
+import { providers } from 'ethers'
+import { octetSignTypedData, octetSignTypedDataQuery } from './OctetUtil'
+
+// For delay test
+const wait = (timeToDelay: number) => new Promise((resolve) => setTimeout(resolve, timeToDelay))
 
 export async function approveEIP155Request(
   requestEvent: SignClientTypes.EventArguments['session_request']
@@ -23,7 +27,6 @@ export async function approveEIP155Request(
       if(!wallet.octet) {
         const message = getSignParamsMessage(request.params)
         const signedMessage = await wallet.signMessage(message)
-        console.log(signedMessage);
         return formatJsonRpcResult(id, signedMessage)
       } else {
         const signedMessage = ""
@@ -39,7 +42,24 @@ export async function approveEIP155Request(
         const signedData = await wallet._signTypedData(domain, types, data)
         return formatJsonRpcResult(id, signedData)
       } else {
-        const signedData = ""
+        const { domain, types, primaryType, message: data } = getSignTypedDataParamsData(request.params)
+        const typedData = {
+          types,
+          domain,
+          primaryType,
+          message: data
+        }
+        
+        const uuid = await octetSignTypedData(typedData, "0x24b72De0699fa68fc9cB4783A44297D96B93B0D9")
+        console.log("uuid", uuid)
+        await wait(1000)
+        let signedData = await octetSignTypedDataQuery(uuid)
+
+        if(signedData === "FAIL") {
+          await wait(1000)
+          signedData = await octetSignTypedDataQuery(uuid)
+        }
+
         return formatJsonRpcResult(id, signedData)
       }
 
