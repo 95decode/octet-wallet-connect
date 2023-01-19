@@ -40,7 +40,6 @@ export async function octetSignTypedData(typedData: any, address: string): Promi
 }
 
 export async function octetSignTypedDataQuery(uuid: string): Promise<string> {
-  console.log("query")
   const options = {
     method: 'GET',
     url: `https://octet-api.blockchainapi.io/2.0/wallets/${octetId}/data/sign/${uuid}`,
