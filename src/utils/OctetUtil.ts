@@ -18,6 +18,27 @@ export async function octetGetAddress(): Promise<string> {
   return res.data[0].address
 }
 
+export async function octetSignMessage(message: string, address: string): Promise<string> {
+  const options = {
+    method: 'POST',
+    url: `https://octet-api.blockchainapi.io/2.0/wallets/${octetId}/data/sign`,
+    headers: {
+      accept: 'application/json',
+      Authorization: `Bearer ${octetKey}`,
+      'content-type': 'application/json'
+    },
+    data: {
+      data: message,
+      type: 'EIP191',
+      address: address
+    }
+  };
+
+  const res = await axios.request(options)
+
+  return res.data.uuid
+}
+
 export async function octetSignTypedData(typedData: any, address: string): Promise<string> {
   const options = {
     method: 'POST',
@@ -39,7 +60,7 @@ export async function octetSignTypedData(typedData: any, address: string): Promi
   return res.data.uuid
 }
 
-export async function octetSignTypedDataQuery(uuid: string): Promise<string> {
+export async function octetSignedDataQuery(uuid: string): Promise<string> {
   const options = {
     method: 'GET',
     url: `https://octet-api.blockchainapi.io/2.0/wallets/${octetId}/data/sign/${uuid}`,

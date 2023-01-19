@@ -9,7 +9,7 @@ import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import { providers } from 'ethers'
-import { octetSignTypedData, octetSignTypedDataQuery } from './OctetUtil'
+import { octetSignTypedData, octetSignedDataQuery, octetSignMessage } from './OctetUtil'
 
 // For delay test
 const wait = (timeToDelay: number) => new Promise((resolve) => setTimeout(resolve, timeToDelay))
@@ -24,12 +24,23 @@ export async function approveEIP155Request(
   switch (request.method) {
     case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
     case EIP155_SIGNING_METHODS.ETH_SIGN:
+      const message = getSignParamsMessage(request.params)
+
       if(!wallet.octet.status) {
-        const message = getSignParamsMessage(request.params)
         const signedMessage = await wallet.signMessage(message)
         return formatJsonRpcResult(id, signedMessage)
       } else {
-        const signedMessage = ""
+        const uuid = await octetSignMessage(message, wallet.getAddress())
+        // Wait for Octet scheduler
+        await wait(1000)
+
+        let signedMessage = await octetSignedDataQuery(uuid)
+
+        if(signedMessage === "FAIL") {
+          await wait(1000)
+          signedMessage = await octetSignedDataQuery(uuid)
+        }
+        
         return formatJsonRpcResult(id, signedMessage)
       }
 
@@ -51,12 +62,13 @@ export async function approveEIP155Request(
         }
         
         const uuid = await octetSignTypedData(typedData, wallet.getAddress())
+        // Wait for Octet scheduler
         await wait(1000)
-        let signedData = await octetSignTypedDataQuery(uuid)
+        let signedData = await octetSignedDataQuery(uuid)
 
         if(signedData === "FAIL") {
           await wait(1000)
-          signedData = await octetSignTypedDataQuery(uuid)
+          signedData = await octetSignedDataQuery(uuid)
         }
 
         return formatJsonRpcResult(id, signedData)
