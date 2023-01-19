@@ -8,8 +8,8 @@ import {
 import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
-import { providers } from 'ethers'
-import { octetSignTypedData, octetSignedDataQuery, octetSignMessage } from './OctetUtil'
+import { ethers, providers } from 'ethers'
+import { octetSignTypedData, octetSignedDataQuery, octetSignMessage, octetSignTransaction, octetSignedTxQuery, octetSendSignedTx } from './OctetUtil'
 
 // For delay test
 const wait = (timeToDelay: number) => new Promise((resolve) => setTimeout(resolve, timeToDelay))
@@ -75,25 +75,57 @@ export async function approveEIP155Request(
       }
 
     case EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION:
+      const sendTransaction = request.params[0]
+
       if(!wallet.octet.status) {
         const provider = new providers.JsonRpcProvider(EIP155_CHAINS[chainId as TEIP155Chain].rpc)
-        const sendTransaction = request.params[0]
         const connectedWallet = wallet.connect(provider)
         const { hash } = await connectedWallet.sendTransaction(sendTransaction)
         return formatJsonRpcResult(id, hash)
       } else {
-        const hash = ""
-        return formatJsonRpcResult(id, hash)
+        delete sendTransaction.from
+        const serializedTx = ethers.utils.serializeTransaction(sendTransaction).slice(2)
+        const uuid = await octetSignTransaction(serializedTx, wallet.getAddress())
+        // Wait for Octet scheduler
+        await wait(1000)
+        let signedTx = await octetSignedTxQuery(uuid)
+
+        if(signedTx === "FAIL") {
+          await wait(1000)
+          signedTx = await octetSignedTxQuery(uuid)
+        }
+
+        await wait(1000)
+        let txid = await octetSendSignedTx(signedTx)
+
+        if(txid === "FAIL") {
+          await wait(1000)
+          txid = await octetSendSignedTx(signedTx)
+        }
+
+        return formatJsonRpcResult(id, txid)
       }
 
     case EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION:
+      const signTransaction = request.params[0]
+
       if(!wallet.octet.status) {
-        const signTransaction = request.params[0]
         const signature = await wallet.signTransaction(signTransaction)
         return formatJsonRpcResult(id, signature)
       } else {
-        const signature = ""
-        return formatJsonRpcResult(id, signature)
+        delete signTransaction.from
+        const serializedTx = ethers.utils.serializeTransaction(signTransaction).slice(2)
+        const uuid = await octetSignTransaction(serializedTx, wallet.getAddress())
+        // Wait for Octet scheduler
+        await wait(1000)
+        let signedTx = await octetSignedTxQuery(uuid)
+
+        if(signedTx === "FAIL") {
+          await wait(1000)
+          signedTx = await octetSignedTxQuery(uuid)
+        }
+
+        return formatJsonRpcResult(id, signedTx)
       }
 
     default:

@@ -11,7 +11,7 @@ export async function octetGetAddress(): Promise<string> {
       accept: 'application/json',
       Authorization: `Bearer ${octetKey}`
     }
-  };
+  }
 
   const res = await axios.request(options)
 
@@ -32,7 +32,7 @@ export async function octetSignMessage(message: string, address: string): Promis
       type: 'EIP191',
       address: address
     }
-  };
+  }
 
   const res = await axios.request(options)
 
@@ -60,14 +60,71 @@ export async function octetSignTypedData(typedData: any, address: string): Promi
   return res.data.uuid
 }
 
+export async function octetSignTransaction(serializedTx: string, address: string): Promise<string> {
+  const options = {
+    method: 'POST',
+    url: `https://octet-api.blockchainapi.io/2.0/wallets/${octetId}/transactions/sign`,
+    headers: {
+      accept: 'application/json',
+      Authorization: `Bearer ${octetKey}`,
+      'content-type': 'application/json'
+    },
+    data: {
+      address: address, 
+      serializedUnsignedTransaction: serializedTx
+    }
+  }
+
+  const res = await axios.request(options)
+  
+  return res.data.uuid
+}
+
+export async function octetSendSignedTx(signedTx: string): Promise<string> {
+  const options = {
+    method: 'POST',
+    url: `https://octet-api.blockchainapi.io/2.0/wallets/${octetId}/transactions/send`,
+    headers: {
+      accept: 'application/json',
+      Authorization: `Bearer ${octetKey}`,
+      'content-type': 'application/json'
+    },
+    data: {
+      serializedSignedTransaction: signedTx
+    }
+  }
+
+  const res = await axios.request(options)
+
+  return Object.keys(res.data).includes("errorCode") ? "FAIL" : res.data.txid
+}
+
 export async function octetSignedDataQuery(uuid: string): Promise<string> {
   const options = {
     method: 'GET',
     url: `https://octet-api.blockchainapi.io/2.0/wallets/${octetId}/data/sign/${uuid}`,
-    headers: {accept: 'application/json', Authorization: `Bearer ${octetKey}`}
+    headers: {
+      accept: 'application/json', 
+      Authorization: `Bearer ${octetKey}`
+    }
   }
 
   const res = await axios.request(options)
 
   return res.data.status === "SUCCESS" ? res.data.serializedSignedData : "FAIL"
+}
+
+export async function octetSignedTxQuery(uuid: string): Promise<string> {
+  const options = {
+    method: 'GET',
+    url: `https://octet-api.blockchainapi.io/2.0/wallets/${octetId}/transactions/sign/${uuid}`,
+    headers: {
+      accept: 'application/json', 
+      Authorization: `Bearer ${octetKey}`
+    }
+  }
+
+  const res = await axios.request(options)
+
+  return res.data.status === "SUCCESS" ? res.data.serializedSignedTransaction : "FAIL"
 }
