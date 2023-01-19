@@ -9,7 +9,6 @@ import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
 import { SignClientTypes } from '@walletconnect/types'
 import { getSdkError } from '@walletconnect/utils'
 import { ethers, providers } from 'ethers'
-//import axios from 'axios';
 
 export async function approveEIP155Request(
   requestEvent: SignClientTypes.EventArguments['session_request']
@@ -21,35 +20,50 @@ export async function approveEIP155Request(
   switch (request.method) {
     case EIP155_SIGNING_METHODS.PERSONAL_SIGN:
     case EIP155_SIGNING_METHODS.ETH_SIGN:
-      const message = getSignParamsMessage(request.params)
-      const signedMessage = await wallet.signMessage(message)
-      console.log(signedMessage);
-      return formatJsonRpcResult(id, signedMessage)
+      if(!wallet.octet) {
+        const message = getSignParamsMessage(request.params)
+        const signedMessage = await wallet.signMessage(message)
+        console.log(signedMessage);
+        return formatJsonRpcResult(id, signedMessage)
+      } else {
+        const signedMessage = ""
+        return formatJsonRpcResult(id, signedMessage)
+      }
 
     case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA:
     case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V3:
     case EIP155_SIGNING_METHODS.ETH_SIGN_TYPED_DATA_V4:
-      console.log("params : ",request.params)
-      const { domain, types, message: data } = getSignTypedDataParamsData(request.params)
-      // https://github.com/ethers-io/ethers.js/issues/687#issuecomment-714069471
-      delete types.EIP712Domain
-      const signedData = await wallet._signTypedData(domain, types, data)
-      return formatJsonRpcResult(id, signedData)
+      if(!wallet.octet) {
+        const { domain, types, message: data } = getSignTypedDataParamsData(request.params)
+        delete types.EIP712Domain
+        const signedData = await wallet._signTypedData(domain, types, data)
+        return formatJsonRpcResult(id, signedData)
+      } else {
+        const signedData = ""
+        return formatJsonRpcResult(id, signedData)
+      }
 
     case EIP155_SIGNING_METHODS.ETH_SEND_TRANSACTION:
-      console.log("req : ", request.params[0])
-      console.log("to : ", request.params[0].to)
-      console.log(chainId);
-      const provider = new providers.JsonRpcProvider(EIP155_CHAINS[chainId as TEIP155Chain].rpc)
-      const sendTransaction = request.params[0]
-      const connectedWallet = wallet.connect(provider)
-      const { hash } = await connectedWallet.sendTransaction(sendTransaction)
-      return formatJsonRpcResult(id, hash)
+      if(!wallet.octet) {
+        const provider = new providers.JsonRpcProvider(EIP155_CHAINS[chainId as TEIP155Chain].rpc)
+        const sendTransaction = request.params[0]
+        const connectedWallet = wallet.connect(provider)
+        const { hash } = await connectedWallet.sendTransaction(sendTransaction)
+        return formatJsonRpcResult(id, hash)
+      } else {
+        const hash = ""
+        return formatJsonRpcResult(id, hash)
+      }
 
     case EIP155_SIGNING_METHODS.ETH_SIGN_TRANSACTION:
-      const signTransaction = request.params[0]
-      const signature = await wallet.signTransaction(signTransaction)
-      return formatJsonRpcResult(id, signature)
+      if(!wallet.octet) {
+        const signTransaction = request.params[0]
+        const signature = await wallet.signTransaction(signTransaction)
+        return formatJsonRpcResult(id, signature)
+      } else {
+        const signature = ""
+        return formatJsonRpcResult(id, signature)
+      }
 
     default:
       throw new Error(getSdkError('INVALID_METHOD').message)

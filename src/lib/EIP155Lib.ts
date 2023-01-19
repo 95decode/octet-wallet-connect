@@ -12,9 +12,11 @@ interface IInitArgs {
  */
 export default class EIP155Lib {
   wallet: Wallet
+  octet: boolean
 
   constructor(wallet: Wallet) {
     this.wallet = wallet
+    this.octet = false
   }
 
   static init({ mnemonic }: IInitArgs) {
@@ -24,7 +26,10 @@ export default class EIP155Lib {
   }
 
   getMnemonic() {
-    return this.wallet.mnemonic.phrase
+    const res = this.octet 
+    ? "Octet does not export mnemoic phrase." 
+    : this.wallet.mnemonic.phrase
+    return res
   }
 
   getAddress() {

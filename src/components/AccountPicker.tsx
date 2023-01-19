@@ -15,6 +15,7 @@ export default function AccountPicker() {
     <select value={account} onChange={e => onSelect(e.currentTarget.value)} aria-label="addresses">
       <option value={0}>Account 1</option>
       <option value={1}>Account 2</option>
+      <option value={2}>Octet</option>
     </select>
   )
 }
