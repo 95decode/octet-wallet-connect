@@ -1,6 +1,6 @@
-# Ethereum Wallet Connect Example wallet app
+# WalletConnect + Octet sample wallet
 
-Wallet app template
+For tokenbank test
 
 ## Getting started
 
@@ -18,5 +18,7 @@ Your `.env.local` now contains the following environment variables:
 
 - `NEXT_PUBLIC_PROJECT_ID` (placeholder) - You can generate your own ProjectId at https://cloud.walletconnect.com
 - `NEXT_PUBLIC_RELAY_URL` (already set)
+- `OCTET_API_KEY` - Hexlant octet api key
+- `OCTET_WALLET_NUM` - Octet wallet id
 
 3. Run `yarn dev` or `npm run dev` to start local development
