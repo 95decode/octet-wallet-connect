@@ -1,15 +1,22 @@
 import { EIP155_CHAINS, EIP155_SIGNING_METHODS, TEIP155Chain } from '@/data/EIP155Data'
 import { eip155Addresses, eip155Wallets } from '@/utils/EIP155WalletUtil'
+import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
+import { SignClientTypes } from '@walletconnect/types'
+import { getSdkError } from '@walletconnect/utils'
+import { ethers, providers } from 'ethers'
 import {
   getSignParamsMessage,
   getSignTypedDataParamsData,
   getWalletAddressFromParams
 } from '@/utils/HelperUtil'
-import { formatJsonRpcError, formatJsonRpcResult } from '@json-rpc-tools/utils'
-import { SignClientTypes } from '@walletconnect/types'
-import { getSdkError } from '@walletconnect/utils'
-import { ethers, providers } from 'ethers'
-import { octetSignTypedData, octetSignedDataQuery, octetSignMessage, octetSignTransaction, octetSignedTxQuery, octetSendSignedTx } from './OctetUtil'
+import { 
+  octetSignTypedData, 
+  octetSignedDataQuery, 
+  octetSignMessage, 
+  octetSignTransaction, 
+  octetSignedTxQuery, 
+  octetSendSignedTx 
+} from '@/utils/OctetUtil'
 
 // For delay test
 const wait = (timeToDelay: number) => new Promise((resolve) => setTimeout(resolve, timeToDelay))
